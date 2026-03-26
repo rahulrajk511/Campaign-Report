@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meridian Campaign Intelligence</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --navy: #0D1B2A;
+    --gold: #C8992A;
+    --gold-light: #E8B84B;
+    --text-main: #1A1A1A;
+    --text-muted: #6B6B6B;
+    --border: rgba(0,0,0,0.1);
+    --surface: #ffffff;
+    --surface2: #F6F5F2;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    color: var(--text-main);
+    background: #F4F2EE;
+    padding: 2rem;
+    min-height: 100vh;
+  }
+
+  .db-root {
+    max-width: 1100px;
+    margin: 0 auto;
+    background: #F4F2EE;
+    padding-bottom: 3rem;
+  }
+
+  .db-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.5rem 0 1.25rem;
+    border-bottom: 0.5px solid var(--border);
+    margin-bottom: 1.5rem;
+  }
+
+  .db-logo {
+    font-family: 'DM Serif Display', serif;
+    font-size: 20px;
+    color: var(--text-main);
+    letter-spacing: 0.02em;
+  }
+
+  .db-logo span { color: var(--gold); }
+
+  .db-period { display: flex; gap: 6px; align-items: center; }
+
+  .period-meta { font-size: 11px; color: var(--text-muted); margin-right: 8px; }
+
+  .period-btn {
+    padding: 5px 16px;
+    border-radius: 20px;
+    border: 0.5px solid var(--border);
+    background: transparent;
+    font-size: 12px;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .period-btn.active {
+    background: var(--gold);
+    border-color: var(--gold);
+    color: #fff;
+    font-weight: 500;
+  }
+
+  .section-label {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 0.6rem;
+  }
+
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 1.25rem;
+  }
+
+  .kpi-card {
+    background: var(--surface2);
+    border-radius: 8px;
+    padding: 0.9rem 1rem;
+    position: relative;
+  }
+
+  .kpi-accent {
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px; height: 100%;
+    border-radius: 8px 0 0 8px;
+    background: var(--gold);
+  }
+
+  .kpi-label { font-size: 11px; color: var(--text-muted); margin-bottom: 4px; }
+  .kpi-value { font-family: 'DM Serif Display', serif; font-size: 28px; color: var(--text-main); line-height: 1.1; }
+  .kpi-delta { font-size: 11px; margin-top: 4px; }
+  .delta-up { color: #2E7D52; }
+  .delta-down { color: #B03A3A; }
+  .delta-neutral { color: var(--text-muted); }
+
+  .two-col {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+    gap: 12px;
+    margin-bottom: 1.25rem;
+  }
+
+  .three-col {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 1.25rem;
+  }
+
+  .panel {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem 1.1rem;
+  }
+
+  .panel-title {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-main);
+    margin-bottom: 0.85rem;
+  }
+
+  .engagement-bar-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+
+  .eb-label { font-size: 11px; color: var(--text-muted); width: 100px; flex-shrink: 0; }
+  .eb-track { flex: 1; height: 6px; background: var(--surface2); border-radius: 3px; overflow: hidden; }
+  .eb-fill { height: 100%; border-radius: 3px; }
+  .eb-val { font-size: 11px; font-weight: 500; color: var(--text-main); width: 38px; text-align: right; flex-shrink: 0; }
+
+  .bench-pill {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 8px; border-radius: 12px; font-size: 11px;
+  }
+  .bench-above { background: #E8F5EF; color: #1B5C36; }
+  .bench-below { background: #FDEAEA; color: #7A1F1F; }
+  .bench-inline { background: #F0EEF8; color: #4A3DAA; }
+
+  .list-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 7px 0;
+    border-bottom: 0.5px solid var(--border);
+  }
+  .list-row:last-child { border-bottom: none; }
+  .list-rank { font-size: 11px; color: var(--text-muted); width: 18px; flex-shrink: 0; }
+  .list-name { font-size: 12px; color: var(--text-main); flex: 1; padding: 0 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .list-val { font-size: 12px; font-weight: 500; color: var(--text-main); flex-shrink: 0; }
+  .list-badge { font-size: 10px; padding: 2px 7px; border-radius: 10px; margin-left: 6px; flex-shrink: 0; }
+  .badge-fire { background: #FEF0DB; color: #9A5408; }
+  .badge-new { background: #E2F0FD; color: #1050A0; }
+  .badge-action { background: #E8F5EF; color: #1B5C36; }
+
+  .health-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 6px 0; border-bottom: 0.5px solid var(--border);
+  }
+  .health-row:last-of-type { border-bottom: none; }
+  .health-label { font-size: 12px; color: var(--text-muted); }
+  .health-val { font-size: 13px; font-weight: 500; color: var(--text-main); }
+
+  .seg-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .seg-item { padding: 8px 10px; background: var(--surface2); border-radius: 8px; }
+  .seg-name { font-size: 11px; color: var(--text-muted); margin-bottom: 3px; }
+  .seg-val { font-size: 15px; font-weight: 500; color: var(--text-main); }
+  .seg-sub { font-size: 10px; color: var(--text-muted); }
+
+  .freq-bar-wrap { margin-top: 4px; }
+  .freq-row { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
+  .freq-label { font-size: 11px; color: var(--text-muted); width: 50px; flex-shrink: 0; }
+  .freq-track { flex: 1; height: 14px; background: var(--surface2); border-radius: 3px; overflow: hidden; }
+  .freq-fill {
+    height: 100%; border-radius: 3px;
+    display: flex; align-items: center; padding-left: 6px;
+    font-size: 10px; color: #fff; font-weight: 500;
+  }
+
+  .overlap-vis { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+  .ov-row { display: flex; align-items: center; gap: 8px; font-size: 11px; }
+  .ov-name { width: 110px; color: var(--text-muted); flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ov-bar { flex: 1; height: 8px; background: var(--surface2); border-radius: 3px; overflow: hidden; }
+  .ov-fill { height: 100%; border-radius: 3px; }
+  .ov-pct { width: 32px; text-align: right; font-weight: 500; color: var(--text-main); flex-shrink: 0; }
+
+  .downstream-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px; margin-top: 4px;
+  }
+  .ds-card { background: var(--surface2); border-radius: 8px; padding: 12px; text-align: center; }
+  .ds-num { font-family: 'DM Serif Display', serif; font-size: 24px; }
+  .ds-label { font-size: 10px; color: var(--text-muted); margin-top: 4px; }
+
+  .signal-row {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 10px 12px; border-radius: 8px; margin-bottom: 6px;
+    border: 0.5px solid var(--border); background: var(--surface2);
+  }
+  .signal-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 4px; }
+  .signal-text { font-size: 12px; color: var(--text-main); line-height: 1.6; }
+
+  .tag-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+  .tag { padding: 3px 9px; border-radius: 12px; font-size: 11px; background: var(--surface2); border: 0.5px solid var(--border); color: var(--text-muted); }
+  .tag.hot { background: #FEF0DB; color: #9A5408; border-color: transparent; }
+  .tag.cool { background: #E2F0FD; color: #1050A0; border-color: transparent; }
+
+  .full-row { margin-bottom: 1.25rem; }
+
+  .footer-note { font-size: 11px; color: var(--text-muted); margin-top: 1.5rem; }
+
+  @media (max-width: 768px) {
+    body { padding: 1rem; }
+    .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    .two-col, .three-col { grid-template-columns: 1fr; }
+    .downstream-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+<div class="db-root">
+
+  <div class="db-header">
+    <div class="db-logo">Meridian<span>.</span> Campaign Intelligence</div>
+    <div style="display:flex;align-items:center;gap:14px;">
+      <span class="period-meta">Financial Advisors · US</span>
+      <div class="db-period">
+        <button class="period-btn" onclick="switchPeriod('weekly',this)">Weekly</button>
+        <button class="period-btn active" onclick="switchPeriod('monthly',this)">Monthly</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-label">Reach &amp; audience</div>
+  <div class="kpi-grid">
+    <div class="kpi-card"><div class="kpi-accent"></div>
+      <div class="kpi-label">Advisors reached</div>
+      <div class="kpi-value" id="kv-reached">14,820</div>
+      <div class="kpi-delta delta-up">▲ +6.2% vs prior period</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Active list size</div>
+      <div class="kpi-value" id="kv-list">22,410</div>
+      <div class="kpi-delta delta-up">▲ +312 net new this period</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">New additions</div>
+      <div class="kpi-value" id="kv-new">510</div>
+      <div class="kpi-delta delta-neutral">Onboarded advisors</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Unsubscribes</div>
+      <div class="kpi-value" id="kv-unsub">198</div>
+      <div class="kpi-delta delta-up">▼ Churn rate 0.88%</div>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="panel">
+      <div class="panel-title">Engagement funnel · vs industry benchmark</div>
+      <div class="engagement-bar-row">
+        <div class="eb-label">Delivered</div>
+        <div class="eb-track"><div class="eb-fill" style="width:98%;background:#C8992A;"></div></div>
+        <div class="eb-val">98.1%</div>
+        <span class="bench-pill bench-above">▲ +1.1pp</span>
+      </div>
+      <div class="engagement-bar-row">
+        <div class="eb-label">Open rate</div>
+        <div class="eb-track"><div class="eb-fill" style="width:46%;background:#E8B84B;"></div></div>
+        <div class="eb-val">23.4%</div>
+        <span class="bench-pill bench-above">▲ +4.2pp</span>
+      </div>
+      <div class="engagement-bar-row">
+        <div class="eb-label">Click-through</div>
+        <div class="eb-track"><div class="eb-fill" style="width:28%;background:#85B7EB;"></div></div>
+        <div class="eb-val" id="kv-ctr">7.1%</div>
+        <span class="bench-pill bench-above">▲ +1.8pp</span>
+      </div>
+      <div class="engagement-bar-row">
+        <div class="eb-label">Click-to-open</div>
+        <div class="eb-track"><div class="eb-fill" style="width:62%;background:#5DCAA5;"></div></div>
+        <div class="eb-val">30.5%</div>
+        <span class="bench-pill bench-inline">≈ Inline</span>
+      </div>
+      <div class="engagement-bar-row">
+        <div class="eb-label">Unsubscribe</div>
+        <div class="eb-track"><div class="eb-fill" style="width:9%;background:#E24B4A;"></div></div>
+        <div class="eb-val">0.88%</div>
+        <span class="bench-pill bench-below">▼ +0.2pp</span>
+      </div>
+      <div style="margin-top:10px;font-size:11px;color:var(--text-muted);">Benchmark: Financial services email · North America 2024</div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">Advisor engagement depth</div>
+      <div class="health-row"><span class="health-label">Engaged advisors (any action)</span><span class="health-val">6,210</span></div>
+      <div class="health-row"><span class="health-label">First-time engagers</span><span class="health-val" style="color:#2E7D52;">841 ▲ +18%</span></div>
+      <div class="health-row"><span class="health-label">Multi-touch (3+ campaigns)</span><span class="health-val">2,340</span></div>
+      <div class="health-row"><span class="health-label">Re-engaged (dormant >60d)</span><span class="health-val" style="color:#2E7D52;">319</span></div>
+      <div class="health-row"><span class="health-label">Passives (opened, no click)</span><span class="health-val" style="color:var(--text-muted);">2,870</span></div>
+      <div class="health-row"><span class="health-label">Dark (no action >90d)</span><span class="health-val" style="color:#B03A3A;">3,510</span></div>
+    </div>
+  </div>
+
+  <div class="three-col">
+    <div class="panel">
+      <div class="panel-title">Send frequency distribution</div>
+      <div class="freq-bar-wrap">
+        <div class="freq-row"><div class="freq-label">1 email</div><div class="freq-track"><div class="freq-fill" style="width:28%;background:#B4B2A9;">28%</div></div></div>
+        <div class="freq-row"><div class="freq-label">2 emails</div><div class="freq-track"><div class="freq-fill" style="width:34%;background:#C8992A;">34%</div></div></div>
+        <div class="freq-row"><div class="freq-label">3 emails</div><div class="freq-track"><div class="freq-fill" style="width:22%;background:#E8B84B;">22%</div></div></div>
+        <div class="freq-row"><div class="freq-label">4 emails</div><div class="freq-track"><div class="freq-fill" style="width:10%;background:#85B7EB;">10%</div></div></div>
+        <div class="freq-row"><div class="freq-label">5+ emails</div><div class="freq-track"><div class="freq-fill" style="width:6%;background:#5DCAA5;">6%</div></div></div>
+      </div>
+      <div style="margin-top:10px;font-size:11px;color:var(--text-muted);">Avg. sends per advisor: <strong>2.3</strong></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">Audience overlap · top campaigns</div>
+      <div class="overlap-vis">
+        <div class="ov-row"><div class="ov-name">Model Portfolios</div><div class="ov-bar"><div class="ov-fill" style="width:72%;background:#C8992A;"></div></div><div class="ov-pct">72%</div></div>
+        <div class="ov-row"><div class="ov-name">ETF Insights</div><div class="ov-bar"><div class="ov-fill" style="width:58%;background:#85B7EB;"></div></div><div class="ov-pct">58%</div></div>
+        <div class="ov-row"><div class="ov-name">Alternatives</div><div class="ov-bar"><div class="ov-fill" style="width:41%;background:#5DCAA5;"></div></div><div class="ov-pct">41%</div></div>
+        <div class="ov-row"><div class="ov-name">Market Outlook</div><div class="ov-bar"><div class="ov-fill" style="width:35%;background:#B4B2A9;"></div></div><div class="ov-pct">35%</div></div>
+        <div class="ov-row"><div class="ov-name">Tax Alpha</div><div class="ov-bar"><div class="ov-fill" style="width:22%;background:#E8B84B;"></div></div><div class="ov-pct">22%</div></div>
+      </div>
+      <div style="margin-top:8px;font-size:11px;color:var(--text-muted);">% of campaign audience also receiving Model Portfolios</div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">Segment snapshot</div>
+      <div class="seg-grid">
+        <div class="seg-item"><div class="seg-name">Independent RIAs</div><div class="seg-val">38%</div><div class="seg-sub">8,920 advisors</div></div>
+        <div class="seg-item"><div class="seg-name">Wirehouse</div><div class="seg-val">27%</div><div class="seg-sub">6,350 advisors</div></div>
+        <div class="seg-item"><div class="seg-name">Regional B/D</div><div class="seg-val">19%</div><div class="seg-sub">4,460 advisors</div></div>
+        <div class="seg-item"><div class="seg-name">Bank Channel</div><div class="seg-val">16%</div><div class="seg-sub">3,680 advisors</div></div>
+      </div>
+      <div style="margin-top:10px;">
+        <div class="section-label">Highest engagement segment</div>
+        <span class="bench-pill bench-above" style="font-size:11px;">Independent RIAs · 28.1% OR</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="panel">
+      <div class="panel-title">Content resonance · top subjects clicked</div>
+      <div class="list-row"><div class="list-rank">01</div><div class="list-name">Q4 Model Portfolio Rebalance Guide</div><div class="list-val">2,841</div><span class="list-badge badge-fire">Hot</span></div>
+      <div class="list-row"><div class="list-rank">02</div><div class="list-name">Fixed Income Outlook: Navigating Rate Cuts</div><div class="list-val">2,210</div><span class="list-badge badge-fire">Hot</span></div>
+      <div class="list-row"><div class="list-rank">03</div><div class="list-name">Alternative Investments: Client Conversation Kit</div><div class="list-val">1,780</div></div>
+      <div class="list-row"><div class="list-rank">04</div><div class="list-name">Tax-Loss Harvesting Checklist</div><div class="list-val">1,540</div><span class="list-badge badge-new">Rising</span></div>
+      <div class="list-row"><div class="list-rank">05</div><div class="list-name">Equity ETF Factsheet Bundle</div><div class="list-val">1,220</div></div>
+      <div style="margin-top:12px;">
+        <div class="section-label">Trending content themes</div>
+        <div class="tag-row">
+          <span class="tag hot">Model portfolios</span>
+          <span class="tag hot">Fixed income</span>
+          <span class="tag cool">Alternatives</span>
+          <span class="tag cool">Tax alpha</span>
+          <span class="tag">ETFs</span>
+          <span class="tag">Practice mgmt</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">Top URLs clicked</div>
+      <div class="list-row"><div class="list-rank">01</div><div class="list-name">/resources/model-portfolio-q4</div><div class="list-val">3,120</div></div>
+      <div class="list-row"><div class="list-rank">02</div><div class="list-name">/webinar/fixed-income-outlook-reg</div><div class="list-val">2,480</div><span class="list-badge badge-action">Reg</span></div>
+      <div class="list-row"><div class="list-rank">03</div><div class="list-name">/insights/alternatives-2025</div><div class="list-val">1,890</div></div>
+      <div class="list-row"><div class="list-rank">04</div><div class="list-name">/tools/tax-loss-calculator</div><div class="list-val">1,340</div><span class="list-badge badge-action">Tool</span></div>
+      <div class="list-row"><div class="list-rank">05</div><div class="list-name">/fund/etf-core-factsheet.pdf</div><div class="list-val">1,110</div></div>
+    </div>
+  </div>
+
+  <div class="full-row">
+    <div class="panel">
+      <div class="panel-title">Downstream website actions from email click-throughs</div>
+      <div class="downstream-grid">
+        <div class="ds-card"><div class="ds-num" style="color:#2E7D52;">487</div><div class="ds-label">Webinar registrations</div></div>
+        <div class="ds-card"><div class="ds-num" style="color:#185FA5;">312</div><div class="ds-label">Portal sign-ups</div></div>
+        <div class="ds-card"><div class="ds-num" style="color:#C8992A;">918</div><div class="ds-label">Resource downloads</div></div>
+        <div class="ds-card"><div class="ds-num" style="color:#6A3DAA;">204</div><div class="ds-label">Advisor tool uses</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="panel">
+      <div class="panel-title">Top firms by engagement volume</div>
+      <div class="list-row"><div class="list-rank">01</div><div class="list-name">Merrill Lynch Wealth Mgmt</div><div class="list-val">841 clicks</div></div>
+      <div class="list-row"><div class="list-rank">02</div><div class="list-name">Raymond James Financial</div><div class="list-val">720 clicks</div></div>
+      <div class="list-row"><div class="list-rank">03</div><div class="list-name">LPL Financial</div><div class="list-val">690 clicks</div></div>
+      <div class="list-row"><div class="list-rank">04</div><div class="list-name">Edward Jones</div><div class="list-val">614 clicks</div></div>
+      <div class="list-row"><div class="list-rank">05</div><div class="list-name">Baird Private Wealth</div><div class="list-val">480 clicks</div></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">Top firms with downstream actions</div>
+      <div class="list-row"><div class="list-rank">01</div><div class="list-name">Raymond James Financial</div><div class="list-val">148</div><span class="list-badge badge-action">Reg + DL</span></div>
+      <div class="list-row"><div class="list-rank">02</div><div class="list-name">LPL Financial</div><div class="list-val">131</div><span class="list-badge badge-action">Portal</span></div>
+      <div class="list-row"><div class="list-rank">03</div><div class="list-name">Merrill Lynch Wealth Mgmt</div><div class="list-val">109</div><span class="list-badge badge-action">Webinar</span></div>
+      <div class="list-row"><div class="list-rank">04</div><div class="list-name">Baird Private Wealth</div><div class="list-val">96</div></div>
+      <div class="list-row"><div class="list-rank">05</div><div class="list-name">Ameriprise Financial</div><div class="list-val">84</div><span class="list-badge badge-new">New</span></div>
+    </div>
+  </div>
+
+  <div class="full-row">
+    <div class="panel">
+      <div class="panel-title">Executive signals · what this means for the business</div>
+      <div class="signal-row"><div class="signal-dot" style="background:#2E7D52;"></div><div class="signal-text">Open and click rates are outperforming industry benchmarks — campaign messaging is well-calibrated for the FA audience.</div></div>
+      <div class="signal-row"><div class="signal-dot" style="background:#C8992A;"></div><div class="signal-text">16% of the active list (3,510 advisors) are dark for 90+ days. These represent untapped distribution capacity worth addressing before year-end.</div></div>
+      <div class="signal-row"><div class="signal-dot" style="background:#185FA5;"></div><div class="signal-text">Model portfolio and fixed income content is driving the majority of downstream actions — align next quarter's content calendar to these themes.</div></div>
+      <div class="signal-row"><div class="signal-dot" style="background:#9A5408;"></div><div class="signal-text">Raymond James and LPL show the highest downstream conversion ratios — strong candidates for personalized account-based outreach with wholesalers.</div></div>
+    </div>
+  </div>
+
+  <div class="footer-note">Data shown is illustrative. Connect your ESP and CRM to populate live. Benchmark source: Salesforce Marketing Cloud Financial Services benchmark report.</div>
+
+</div>
+
+<script>
+  const data = {
+    weekly:  { reached:'3,210',  list:'22,410', newAdd:'128', unsub:'52',  ctr:'6.8%' },
+    monthly: { reached:'14,820', list:'22,410', newAdd:'510', unsub:'198', ctr:'7.1%' }
+  };
+
+  function switchPeriod(p, btn) {
+    document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const d = data[p];
+    document.getElementById('kv-reached').textContent = d.reached;
+    document.getElementById('kv-list').textContent    = d.list;
+    document.getElementById('kv-new').textContent     = d.newAdd;
+    document.getElementById('kv-unsub').textContent   = d.unsub;
+    document.getElementById('kv-ctr').textContent     = d.ctr;
+  }
+</script>
+</body>
+</html>
