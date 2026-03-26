@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Email Campaign Intelligence</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --gold:#C8992A;--gold-light:#E8B84B;
+  --text:#1A1A1A;--muted:#6B6B6B;
+  --border:#E0DDD8;--surface:#FFFFFF;--surface2:#F5F4F1;
+  --rm:8px;--rl:12px;
+}
+@media(prefers-color-scheme:dark){
+  :root{--text:#F0EDE8;--muted:#9A978F;--border:#2E2C28;--surface:#1C1A17;--surface2:#252320;}
+  body{background:#141311;}
+}
+body{font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);background:#F7F6F3;padding:0;margin:0;}
+.page{max-width:1120px;margin:0 auto;padding:1.5rem 1.5rem 3rem;}
+
+.db-header{display:flex;align-items:center;justify-content:space-between;padding:1.2rem 0 1rem;border-bottom:0.5px solid var(--border);margin-bottom:1.25rem;}
+.db-logo{font-family:'DM Serif Display',serif;font-size:19px;color:var(--text);letter-spacing:.02em;}
+.db-logo span{color:var(--gold);}
+.db-meta{font-size:11px;color:var(--muted);letter-spacing:.04em;}
+
+.sec-lbl{font-size:10px;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:.6rem;}
+
+.kpi4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:1.2rem;}
+.kpi-c{background:var(--surface2);border-radius:var(--rm);padding:.85rem 1rem;position:relative;}
+.kpi-lbl{font-size:11px;color:var(--muted);margin-bottom:3px;}
+.kpi-v{font-family:'DM Serif Display',serif;font-size:25px;color:var(--text);line-height:1.1;}
+.kpi-d{font-size:11px;margin-top:3px;}
+.d-up{color:#2E7D52;}.d-dn{color:#B03A3A;}.d-n{color:var(--muted);}
+.acc{position:absolute;top:0;left:0;width:3px;height:100%;border-radius:var(--rl) 0 0 var(--rl);background:var(--gold);}
+
+.g2{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);gap:12px;margin-bottom:1.2rem;}
+.g3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-bottom:1.2rem;}
+.g-full{margin-bottom:1.2rem;}
+
+.panel{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--rl);padding:1rem 1.1rem;}
+.pt{font-size:12px;font-weight:500;color:var(--text);margin-bottom:.85rem;}
+
+.eb-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.eb-lbl{font-size:11px;color:var(--muted);width:96px;flex-shrink:0;}
+.eb-track{flex:1;height:6px;background:var(--surface2);border-radius:3px;overflow:hidden;}
+.eb-fill{height:100%;border-radius:3px;}
+.eb-v{font-size:11px;font-weight:500;color:var(--text);width:36px;text-align:right;flex-shrink:0;}
+.pill{display:inline-flex;align-items:center;padding:2px 7px;border-radius:10px;font-size:10px;}
+.p-up{background:#E8F5EF;color:#1B5C36;}.p-dn{background:#FDEAEA;color:#7A1F1F;}.p-in{background:#F0EEF8;color:#4A3DAA;}
+
+.hr{display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:0.5px solid var(--border);}
+.hr:last-child{border-bottom:none;}
+.hl{font-size:12px;color:var(--muted);}.hv{font-size:13px;font-weight:500;color:var(--text);}
+
+.list-r{display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:0.5px solid var(--border);}
+.list-r:last-child{border-bottom:none;}
+.lr-n{font-size:11px;color:var(--muted);width:17px;flex-shrink:0;}
+.lr-nm{font-size:12px;color:var(--text);flex:1;padding:0 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.lr-v{font-size:12px;font-weight:500;color:var(--text);flex-shrink:0;}
+.badge{font-size:10px;padding:2px 6px;border-radius:9px;margin-left:5px;flex-shrink:0;}
+.b-fire{background:#FEF0DB;color:#9A5408;}.b-new{background:#E2F0FD;color:#1050A0;}.b-act{background:#E8F5EF;color:#1B5C36;}
+
+.ds4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:4px;}
+.ds-c{background:var(--surface2);border-radius:var(--rm);padding:10px 12px;text-align:center;}
+.ds-n{font-family:'DM Serif Display',serif;font-size:20px;}
+.ds-l{font-size:10px;color:var(--muted);margin-top:2px;}
+
+.sig-r{display:flex;align-items:flex-start;gap:8px;padding:8px 10px;border-radius:var(--rm);margin-bottom:6px;border:0.5px solid var(--border);background:var(--surface2);}
+.sig-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:4px;}
+.sig-t{font-size:12px;color:var(--text);line-height:1.5;}
+
+.aud-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:8px;}
+.aud-it{padding:8px 10px;background:var(--surface2);border-radius:var(--rm);}
+.aud-nm{font-size:11px;color:var(--muted);margin-bottom:2px;}
+.aud-v{font-size:14px;font-weight:500;color:var(--text);}
+.aud-bm{font-size:10px;color:var(--muted);}
+.bm-a{color:#2E7D52;}.bm-b{color:#B03A3A;}
+
+.aum-r{display:flex;align-items:center;gap:7px;margin-bottom:7px;}
+.aum-lbl{font-size:11px;color:var(--muted);width:76px;flex-shrink:0;}
+.aum-bwrap{flex:1;display:flex;flex-direction:column;gap:2px;}
+.aum-b-our{height:7px;border-radius:2px;background:var(--gold);}
+.aum-b-bm{height:7px;border-radius:2px;background:#B4B2A9;opacity:.6;}
+.aum-pct{font-size:11px;font-weight:500;color:var(--text);width:60px;text-align:right;flex-shrink:0;}
+
+.mx-wrap{overflow-x:auto;}
+.mx-tbl{width:100%;border-collapse:collapse;font-size:11px;}
+.mx-tbl th{font-size:10px;font-weight:500;color:var(--muted);padding:5px 7px;text-align:center;background:var(--surface2);white-space:nowrap;}
+.mx-tbl th.rh{text-align:left;}
+.mx-tbl td{padding:5px 7px;text-align:center;border:0.5px solid var(--border);font-size:11px;}
+.mx-self{background:var(--surface2);color:var(--muted);font-style:italic;}
+.mx-hi{background:#FEF0DB;color:#9A5408;font-weight:500;}
+.mx-lo{background:#E8F5EF;color:#1B5C36;}
+.mx-mid{background:#F0EEF8;color:#4A3DAA;}
+
+.tag-row{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;}
+.tag{padding:3px 9px;border-radius:11px;font-size:11px;background:var(--surface2);border:0.5px solid var(--border);color:var(--muted);}
+.tag.hot{background:#FEF0DB;color:#9A5408;border-color:transparent;}
+.tag.cool{background:#E2F0FD;color:#1050A0;border-color:transparent;}
+
+.legend-row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:8px;font-size:11px;color:var(--muted);}
+.leg-dot{width:10px;height:3px;border-radius:2px;display:inline-block;margin-right:3px;vertical-align:middle;}
+
+.ft{font-size:11px;color:var(--muted);margin-top:1.2rem;padding-top:.8rem;border-top:0.5px solid var(--border);}
+
+@media(max-width:760px){
+  .kpi4{grid-template-columns:1fr 1fr;}
+  .g2,.g3{grid-template-columns:1fr;}
+  .ds4{grid-template-columns:1fr 1fr;}
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+  <div class="db-header">
+    <div class="db-logo">Email Campaign<span> Intelligence</span></div>
+    <div class="db-meta">US GWM &nbsp;·&nbsp; Weekly view</div>
+  </div>
+
+  <div class="sec-lbl">Reach &amp; audience</div>
+  <div class="kpi4">
+    <div class="kpi-c"><div class="acc"></div>
+      <div class="kpi-lbl">Advisors reached</div>
+      <div class="kpi-v">3,210</div>
+      <div class="kpi-d d-up">&#9650; +6.2% vs prior week</div>
+    </div>
+    <div class="kpi-c">
+      <div class="kpi-lbl">New additions</div>
+      <div class="kpi-v">128</div>
+      <div class="kpi-d d-up">&#9650; +18% vs prior week</div>
+    </div>
+    <div class="kpi-c">
+      <div class="kpi-lbl">Downstream actions</div>
+      <div class="kpi-v">481</div>
+      <div class="kpi-d d-n">Visits + reg + downloads</div>
+    </div>
+    <div class="kpi-c">
+      <div class="kpi-lbl">Unsubscribes</div>
+      <div class="kpi-v">52</div>
+      <div class="kpi-d d-dn">Unsubscribe rate 0.88%</div>
+    </div>
+  </div>
+
+  <div class="g2">
+    <div class="panel">
+      <div class="pt">Advisors reached &middot; last 5 weeks</div>
+      <div class="legend-row">
+        <span><span class="leg-dot" style="background:#C8992A;"></span>Delivered</span>
+        <span><span class="leg-dot" style="background:#85B7EB;"></span>Opened</span>
+        <span><span class="leg-dot" style="background:#5DCAA5;"></span>Clicked</span>
+      </div>
+      <div style="position:relative;height:175px;"><canvas id="trendChart"></canvas></div>
+    </div>
+
+    <div class="panel">
+      <div class="pt">Advisor engagement depth</div>
+      <div class="hr"><span class="hl">Engaged (any action)</span><span class="hv">1,240</span></div>
+      <div class="hr"><span class="hl">First-time engagers</span><span class="hv" style="color:#2E7D52;">210 &#9650; +18%</span></div>
+      <div class="hr"><span class="hl">Multi-touch (3+ campaigns)</span><span class="hv">580</span></div>
+      <div class="hr"><span class="hl">Re-engaged (dormant &gt;1yr)</span><span class="hv" style="color:#2E7D52;">79</span></div>
+      <div class="hr"><span class="hl">Passives (opened, no click)</span><span class="hv" style="color:var(--muted);">720</span></div>
+      <div class="hr"><span class="hl">Dark (no action &gt;1yr)</span><span class="hv" style="color:#B03A3A;">878</span></div>
+    </div>
+  </div>
+
+  <div class="g2">
+    <div class="panel">
+      <div class="pt">Engagement funnel &middot; vs 2Y benchmark</div>
+      <div class="eb-row"><div class="eb-lbl">Delivered</div><div class="eb-track"><div class="eb-fill" style="width:98%;background:#C8992A;"></div></div><div class="eb-v">98.1%</div><span class="pill p-up">&#9650; +1.1pp</span></div>
+      <div class="eb-row"><div class="eb-lbl">Open rate</div><div class="eb-track"><div class="eb-fill" style="width:46%;background:#E8B84B;"></div></div><div class="eb-v">23.4%</div><span class="pill p-up">&#9650; +4.2pp</span></div>
+      <div class="eb-row"><div class="eb-lbl">Click-through</div><div class="eb-track"><div class="eb-fill" style="width:28%;background:#85B7EB;"></div></div><div class="eb-v">6.8%</div><span class="pill p-up">&#9650; +1.8pp</span></div>
+      <div class="eb-row"><div class="eb-lbl">Click-to-open</div><div class="eb-track"><div class="eb-fill" style="width:62%;background:#5DCAA5;"></div></div><div class="eb-v">30.5%</div><span class="pill p-in">&#8776; Inline</span></div>
+      <div class="eb-row"><div class="eb-lbl">Unsubscribe rate</div><div class="eb-track"><div class="eb-fill" style="width:9%;background:#E24B4A;"></div></div><div class="eb-v">0.88%</div><span class="pill p-dn">&#9660; +0.2pp</span></div>
+      <div style="font-size:11px;color:var(--muted);margin-top:9px;">2Y benchmark: financial services email &middot; North America</div>
+    </div>
+
+    <div class="panel">
+      <div class="pt">Send frequency distribution</div>
+      <div id="freqBars"></div>
+      <div style="margin-top:9px;font-size:11px;color:var(--muted);">Avg. sends per advisor: <strong style="color:var(--text);">2.3</strong></div>
+    </div>
+  </div>
+
+  <div class="g-full">
+    <div class="panel">
+      <div class="pt">Campaign overlap matrix &middot; % shared audience between campaigns</div>
+      <div class="mx-wrap">
+        <table class="mx-tbl" id="overlapMatrix"></table>
+      </div>
+      <div style="margin-top:9px;display:flex;gap:14px;font-size:11px;color:var(--muted);">
+        <span><span style="display:inline-block;width:10px;height:10px;background:#FEF0DB;border-radius:2px;margin-right:3px;vertical-align:middle;"></span>&gt;60% high overlap</span>
+        <span><span style="display:inline-block;width:10px;height:10px;background:#F0EEF8;border-radius:2px;margin-right:3px;vertical-align:middle;"></span>30–60% moderate</span>
+        <span><span style="display:inline-block;width:10px;height:10px;background:#E8F5EF;border-radius:2px;margin-right:3px;vertical-align:middle;"></span>&lt;30% low</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="g-full">
+    <div class="panel">
+      <div class="pt">Audience snapshot</div>
+      <div class="g2" style="margin-bottom:0;">
+        <div>
+          <div class="sec-lbl" style="margin-bottom:7px;">Channel segment &middot; vs 2Y benchmark</div>
+          <div class="aud-grid">
+            <div class="aud-it"><div class="aud-nm">Independent RIAs</div><div class="aud-v">38%</div><div class="aud-bm">BM 32% <span class="bm-a">&#9650; +6pp</span></div></div>
+            <div class="aud-it"><div class="aud-nm">Wirehouse</div><div class="aud-v">27%</div><div class="aud-bm">BM 30% <span class="bm-b">&#9660; &minus;3pp</span></div></div>
+            <div class="aud-it"><div class="aud-nm">Regional B/D</div><div class="aud-v">19%</div><div class="aud-bm">BM 20% <span class="bm-b">&#9660; &minus;1pp</span></div></div>
+            <div class="aud-it"><div class="aud-nm">Bank channel</div><div class="aud-v">16%</div><div class="aud-bm">BM 18% <span class="bm-b">&#9660; &minus;2pp</span></div></div>
+          </div>
+          <div style="margin-top:7px;"><span class="pill p-up" style="font-size:11px;">Highest OR: Independent RIAs &middot; 28.1%</span></div>
+        </div>
+        <div>
+          <div class="sec-lbl" style="margin-bottom:7px;">AUM tier &middot; our mix vs 2Y benchmark</div>
+          <div id="aumBars"></div>
+          <div style="margin-top:8px;display:flex;gap:12px;font-size:11px;color:var(--muted);">
+            <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:3px;background:var(--gold);border-radius:1px;display:inline-block;"></span>Our mix</span>
+            <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:3px;background:#B4B2A9;border-radius:1px;display:inline-block;opacity:.7;"></span>2Y BM</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="g2">
+    <div class="panel">
+      <div class="pt">Content resonance &middot; top subjects</div>
+      <div class="list-r"><div class="lr-n">01</div><div class="lr-nm">Q4 Model Portfolio Rebalance Guide</div><div class="lr-v">2,841</div><span class="badge b-fire">Hot</span></div>
+      <div class="list-r"><div class="lr-n">02</div><div class="lr-nm">Fixed Income Outlook: Navigating Rate Cuts</div><div class="lr-v">2,210</div><span class="badge b-fire">Hot</span></div>
+      <div class="list-r"><div class="lr-n">03</div><div class="lr-nm">Alternatives: Client Conversation Kit</div><div class="lr-v">1,780</div></div>
+      <div class="list-r"><div class="lr-n">04</div><div class="lr-nm">Tax-Loss Harvesting Checklist</div><div class="lr-v">1,540</div><span class="badge b-new">Rising</span></div>
+      <div class="list-r"><div class="lr-n">05</div><div class="lr-nm">Equity ETF Factsheet Bundle</div><div class="lr-v">1,220</div></div>
+      <div class="tag-row">
+        <span class="tag hot">Model portfolios</span>
+        <span class="tag hot">Fixed income</span>
+        <span class="tag cool">Alternatives</span>
+        <span class="tag cool">Tax alpha</span>
+        <span class="tag">ETFs</span>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="pt">Top URLs clicked</div>
+      <div class="list-r"><div class="lr-n">01</div><div class="lr-nm">/resources/model-portfolio-q4</div><div class="lr-v">3,120</div></div>
+      <div class="list-r"><div class="lr-n">02</div><div class="lr-nm">/webinar/fixed-income-outlook-reg</div><div class="lr-v">2,480</div><span class="badge b-act">Reg</span></div>
+      <div class="list-r"><div class="lr-n">03</div><div class="lr-nm">/insights/alternatives-2025</div><div class="lr-v">1,890</div></div>
+      <div class="list-r"><div class="lr-n">04</div><div class="lr-nm">/tools/tax-loss-calculator</div><div class="lr-v">1,340</div><span class="badge b-act">Tool</span></div>
+      <div class="list-r"><div class="lr-n">05</div><div class="lr-nm">/fund/etf-core-factsheet.pdf</div><div class="lr-v">1,110</div></div>
+    </div>
+  </div>
+
+  <div class="g-full">
+    <div class="panel">
+      <div class="pt">Downstream website actions from email click-throughs</div>
+      <div class="ds4">
+        <div class="ds-c"><div class="ds-n" style="color:#2E7D52;">122</div><div class="ds-l">Webinar registrations</div></div>
+        <div class="ds-c"><div class="ds-n" style="color:#185FA5;">78</div><div class="ds-l">Portal sign-ups</div></div>
+        <div class="ds-c"><div class="ds-n" style="color:#C8992A;">230</div><div class="ds-l">Resource downloads</div></div>
+        <div class="ds-c"><div class="ds-n" style="color:#6A3DAA;">51</div><div class="ds-l">Advisor tool uses</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="g2">
+    <div class="panel">
+      <div class="pt">Top firms by engagement</div>
+      <div class="list-r"><div class="lr-n">01</div><div class="lr-nm">Merrill Lynch Wealth Mgmt</div><div class="lr-v">841</div></div>
+      <div class="list-r"><div class="lr-n">02</div><div class="lr-nm">Raymond James Financial</div><div class="lr-v">720</div></div>
+      <div class="list-r"><div class="lr-n">03</div><div class="lr-nm">LPL Financial</div><div class="lr-v">690</div></div>
+      <div class="list-r"><div class="lr-n">04</div><div class="lr-nm">Edward Jones</div><div class="lr-v">614</div></div>
+      <div class="list-r"><div class="lr-n">05</div><div class="lr-nm">Baird Private Wealth</div><div class="lr-v">480</div></div>
+    </div>
+    <div class="panel">
+      <div class="pt">Top firms &middot; downstream actions</div>
+      <div class="list-r"><div class="lr-n">01</div><div class="lr-nm">Raymond James Financial</div><div class="lr-v">148</div><span class="badge b-act">Reg+DL</span></div>
+      <div class="list-r"><div class="lr-n">02</div><div class="lr-nm">LPL Financial</div><div class="lr-v">131</div><span class="badge b-act">Portal</span></div>
+      <div class="list-r"><div class="lr-n">03</div><div class="lr-nm">Merrill Lynch Wealth Mgmt</div><div class="lr-v">109</div><span class="badge b-act">Webinar</span></div>
+      <div class="list-r"><div class="lr-n">04</div><div class="lr-nm">Baird Private Wealth</div><div class="lr-v">96</div></div>
+      <div class="list-r"><div class="lr-n">05</div><div class="lr-nm">Ameriprise Financial</div><div class="lr-v">84</div><span class="badge b-new">New</span></div>
+    </div>
+  </div>
+
+  <div class="g-full">
+    <div class="panel">
+      <div class="pt">Executive signals</div>
+      <div class="sig-r"><div class="sig-dot" style="background:#2E7D52;"></div><div class="sig-t">Open and click rates outperform the 2Y benchmark — messaging is well-calibrated for the GWM advisor audience.</div></div>
+      <div class="sig-r"><div class="sig-dot" style="background:#C8992A;"></div><div class="sig-t">878 advisors dark for over 1 year represent untapped distribution capacity — prioritise re-engagement before year-end.</div></div>
+      <div class="sig-r"><div class="sig-dot" style="background:#185FA5;"></div><div class="sig-t">Model portfolio and fixed income content drives the majority of downstream actions — double down for Q1 content calendar.</div></div>
+      <div class="sig-r"><div class="sig-dot" style="background:#9A5408;"></div><div class="sig-t">Raymond James and LPL show the highest downstream conversion ratios — strong candidates for personalised wholesaler outreach.</div></div>
+      <div class="sig-r"><div class="sig-dot" style="background:#534AB7;"></div><div class="sig-t">Independent RIA segment is over-indexed vs benchmark (+6pp) and delivers the highest open rate — expand RIA targeting in next list refresh.</div></div>
+    </div>
+  </div>
+
+  <div class="ft">Data shown is illustrative. Connect your ESP and CRM to populate live. 2Y benchmark: financial services email &middot; North America.</div>
+
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+new Chart(document.getElementById('trendChart'),{
+  type:'line',
+  data:{
+    labels:['Wk 1','Wk 2','Wk 3','Wk 4','Wk 5'],
+    datasets:[
+      {label:'Delivered',data:[2680,2810,2950,3080,3210],borderColor:'#C8992A',backgroundColor:'transparent',tension:.35,pointRadius:3,pointBackgroundColor:'#C8992A',borderWidth:2},
+      {label:'Opened',data:[610,645,680,710,751],borderColor:'#85B7EB',backgroundColor:'transparent',tension:.35,pointRadius:3,pointBackgroundColor:'#85B7EB',borderWidth:2},
+      {label:'Clicked',data:[171,185,201,215,218],borderColor:'#5DCAA5',backgroundColor:'transparent',tension:.35,pointRadius:3,pointBackgroundColor:'#5DCAA5',borderWidth:2}
+    ]
+  },
+  options:{
+    responsive:true,maintainAspectRatio:false,
+    plugins:{legend:{display:false},tooltip:{mode:'index',intersect:false,callbacks:{label:ctx=>` ${ctx.dataset.label}: ${ctx.parsed.y.toLocaleString()}`}}},
+    scales:{
+      x:{grid:{color:'rgba(128,128,128,0.1)'},ticks:{font:{size:10},color:'#888'}},
+      y:{grid:{color:'rgba(128,128,128,0.1)'},ticks:{font:{size:10},color:'#888',callback:v=>v>=1000?(v/1000).toFixed(1)+'k':v}}
+    }
+  }
+});
+
+const freqData=[
+  {lbl:'1 email',pct:28,col:'#B4B2A9'},
+  {lbl:'2 emails',pct:34,col:'#C8992A'},
+  {lbl:'3 emails',pct:22,col:'#E8B84B'},
+  {lbl:'4 emails',pct:10,col:'#85B7EB'},
+  {lbl:'5+ emails',pct:6,col:'#5DCAA5'}
+];
+const fb=document.getElementById('freqBars');
+freqData.forEach(f=>{
+  const row=document.createElement('div');
+  row.style.cssText='display:flex;align-items:center;gap:6px;margin-bottom:6px;';
+  row.innerHTML=`<span style="font-size:11px;color:var(--muted);width:54px;flex-shrink:0;">${f.lbl}</span>
+    <div style="flex:1;height:14px;background:var(--surface2);border-radius:3px;overflow:hidden;">
+      <div style="width:${f.pct}%;height:100%;border-radius:3px;background:${f.col};display:flex;align-items:center;padding-left:5px;font-size:10px;color:#fff;font-weight:500;">${f.pct}%</div>
+    </div>`;
+  fb.appendChild(row);
+});
+
+const campaigns=['Model Portfolios','ETF Insights','Alternatives','Mkt Outlook','Tax Alpha'];
+const shortNames=['Mdl Port','ETF Ins','Alts','Mkt Out','Tax Alpha'];
+const matrix=[
+  [100,72,41,58,22],
+  [72,100,35,63,18],
+  [41,35,100,29,44],
+  [58,63,29,100,31],
+  [22,18,44,31,100]
+];
+function mxCls(v,self){
+  if(self) return 'mx-self';
+  if(v>60) return 'mx-hi';
+  if(v>=30) return 'mx-mid';
+  return 'mx-lo';
+}
+const mt=document.getElementById('overlapMatrix');
+let h=`<thead><tr><th class="rh" style="background:var(--surface2);text-align:left;padding:5px 7px;"></th>`;
+shortNames.forEach(n=>{ h+=`<th>${n}</th>`; });
+h+=`</tr></thead><tbody>`;
+campaigns.forEach((row,i)=>{
+  h+=`<tr><td style="font-size:11px;font-weight:500;color:var(--text);white-space:nowrap;padding:5px 7px;text-align:left;background:var(--surface2);">${row}</td>`;
+  matrix[i].forEach((v,j)=>{
+    h+=`<td class="${mxCls(v,i===j)}">${i===j?'&mdash;':v+'%'}</td>`;
+  });
+  h+=`</tr>`;
+});
+h+=`</tbody>`;
+mt.innerHTML=h;
+
+const aumData=[
+  {lbl:'$1M–5M',our:32,bm:28},
+  {lbl:'$5M–25M',our:29,bm:31},
+  {lbl:'$25M–100M',our:22,bm:24},
+  {lbl:'$100M+',our:17,bm:17}
+];
+const ab=document.getElementById('aumBars');
+aumData.forEach(a=>{
+  const diff=a.our-a.bm;
+  const tag=diff>0?`<span class="bm-a">&#9650; +${diff}pp</span>`:diff<0?`<span class="bm-b">&#9660; ${diff}pp</span>`:`<span style="color:var(--muted);">=&nbsp;BM</span>`;
+  const row=document.createElement('div');
+  row.className='aum-r';
+  row.innerHTML=`<span class="aum-lbl">${a.lbl}</span>
+    <div class="aum-bwrap">
+      <div class="aum-b-our" style="width:${Math.round(a.our*2.8)}px;"></div>
+      <div class="aum-b-bm" style="width:${Math.round(a.bm*2.8)}px;"></div>
+    </div>
+    <span class="aum-pct">${a.our}% ${tag}</span>`;
+  ab.appendChild(row);
+});
+</script>
+</body>
+</html>
